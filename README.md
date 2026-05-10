@@ -1,92 +1,26 @@
-# Wordly Single Page Application (SPA)
+# Password Input Lab
 
-This project is a summative lab that builds an interactive dictionary Single Page Application using HTML, CSS, and JavaScript.
+This project is a small React lab focused on event handling. It renders a password field and a submit button, then tracks three interactions needed by a future anti-bot workflow:
 
-The app lets users search for a word and view:
-- Pronunciation details
-- Definitions and part of speech
-- Example usage
-- Synonyms
-- Source reference links
+- typing in the password field
+- moving the mouse onto the submit button
+- moving the mouse away from the submit button
 
-It also includes:
-- Error handling for invalid or missing words
-- Audio playback for pronunciation when available
-- Saved words with local storage
-- Dynamic theme toggling for readability
+## Component Tree
 
-## Problem Definition
-
-Wordly needs a fast, user-friendly dictionary tool that works without full page reloads. Users should be able to search words, inspect language details, and save useful terms for later review.
-
-## Design Decisions
-
-- HTML: Semantic layout with accessible labels and regions for dynamic results
-- CSS: Responsive, high-contrast styling with intentional visual hierarchy and interactive states
-- JavaScript: Fetch-based API integration, robust parsing, event-driven UI updates, and local storage persistence
-
-## Tech Stack
-
-- HTML5
-- CSS3
-- JavaScript (ES6+)
-- [Free Dictionary API](https://dictionaryapi.dev/)
-
-## Features Mapped to Rubric
-
-1. Search Functionality
-- Users submit a word via form input
-- Empty and invalid input handling is included
-
-2. Data Display
-- Definitions, parts of speech, examples, pronunciation, and synonyms are rendered dynamically
-- Graceful fallback messaging for missing data
-
-3. Form and Event Handling
-- Form submission is handled with event listeners
-- Buttons support theme toggling, saving words, and audio playback
-
-4. DOM Manipulation
-- Results and status messages update in-place without page reloads
-- Saved words list re-renders with interactive word pills
-
-5. Fetch API Usage
-- Uses async/await and `fetch` to query the dictionary API
-- Handles `404` and generic network/request failures
-
-6. Code Syntax
-- Functions are organized by behavior (fetch, render, storage, events)
-- State is centralized for predictable UI updates
-
-7. Styling and UX
-- Responsive layout for desktop and mobile
-- Intentional typography, gradient backgrounds, hover states, and loading/status feedback
-
-## Project Structure
-
-- `index.html` - semantic SPA layout and accessible UI structure
-- `styles.css` - responsive styling and theme variables
-- `index.js` - API integration, event handling, DOM updates, and local storage
-
-## Getting Started
-
-1. Clone the repository:
-
-```bash
-git clone git@github.com:Snax011/Single-page-application.git
+```text
+App
+|- PasswordInput
+|- SubmitButton
 ```
 
-2. Open the project folder:
+## Component Descriptions
 
-```bash
-cd Single-page-application
-```
+- `App` organizes the page layout and connects the two interactive child components.
+- `PasswordInput` renders one password input, logs `Entering password...` on each change event, and exposes a small UI status showing the current character count.
+- `SubmitButton` renders the `Submit Password` button, logs `Mouse Entering` on mouse enter, logs `Mouse Exiting` on mouse leave, and exposes a small hover status for testing.
 
-3. Launch `index.html` with Live Server or any local static server.
-
-## Automated Testing (npm test)
-
-This project includes automated unit tests using Vitest.
+## Run The Project
 
 1. Install dependencies:
 
@@ -94,32 +28,46 @@ This project includes automated unit tests using Vitest.
 npm install
 ```
 
-2. Run all tests once:
+2. Start the development server:
+
+```bash
+npm run dev
+```
+
+3. Open the local URL shown by Vite in your browser.
+
+4. Build a production bundle when needed:
+
+```bash
+npm run build
+```
+
+## Run Tests
+
+Run the automated test suite with:
 
 ```bash
 npm test
 ```
 
-3. Run tests in watch mode while you code:
+The tests cover:
 
-```bash
-npm run test:watch
-```
+- password input rendering and `type="password"`
+- console logging on text changes
+- submit button rendering
+- console logging on mouse enter and mouse leave
+- rapid input updates as an edge case
 
-What is currently tested:
-- Pronunciation parsing helpers
-- Audio URL extraction
-- Synonym collection and deduplication
-- API fetch success and failure handling
+## Screenshot
 
-## Testing Checklist
+Preview image:
 
-- Search valid words and confirm details render correctly
-- Search words that may not include synonyms or audio
-- Submit empty input and verify validation messaging
-- Search invalid words and verify error handling
-- Save words and confirm persistence after reload
-- Toggle themes and confirm persistence after reload
+![Password input lab preview](./docs/password-input-preview.svg)
+
+## Notes
+
+- There are no `Home.jsx`, `About.jsx`, or `Links.jsx` files in this workspace, so that documentation requirement is not applicable to this repo.
+- You do not need to create an empty GitHub repository just to complete this lab locally. Only create or push to GitHub if your class or client specifically requires remote version control.
 
 ## License
 

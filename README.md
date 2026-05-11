@@ -1,26 +1,36 @@
-# Password Input Lab
+# React Shopping App Lab
 
-This project is a small React lab focused on event handling. It renders a password field and a submit button, then tracks three interactions needed by a future anti-bot workflow:
+This project is a dynamic shopping application built with React and the `useState` hook.
 
-- typing in the password field
-- moving the mouse onto the submit button
-- moving the mouse away from the submit button
+It implements three core features:
+
+- dark mode toggle
+- category-based product filtering
+- add-to-cart behavior
 
 ## Component Tree
 
 ```text
 App
-|- PasswordInput
-|- SubmitButton
+|- DarkModeToggle
+|- ProductList
+|  |- ProductCard
+|- Cart
 ```
 
-## Component Descriptions
+## Features Implemented
 
-- `App` organizes the page layout and connects the two interactive child components.
-- `PasswordInput` renders one password input, logs `Entering password...` on each change event, and exposes a small UI status showing the current character count.
-- `SubmitButton` renders the `Submit Password` button, logs `Mouse Entering` on mouse enter, logs `Mouse Exiting` on mouse leave, and exposes a small hover status for testing.
+- Dark Mode Toggle
+	- The toggle button text switches between `Toggle Dark Mode` and `Toggle Light Mode`.
+	- The app shell updates visual styles when dark mode is enabled.
+- Product Category Filtering
+	- A category dropdown in `App` updates selected category state.
+	- `ProductList` only renders products matching the selected category.
+- Add to Cart
+	- Each `ProductCard` has an `Add to Cart` button.
+	- Added items appear in `Cart` as messages such as `Milk is in your cart.`
 
-## Run The Project
+## Run Locally
 
 1. Install dependencies:
 
@@ -28,46 +38,31 @@ App
 npm install
 ```
 
-2. Start the development server:
+2. Start development server:
 
 ```bash
 npm run dev
 ```
 
-3. Open the local URL shown by Vite in your browser.
-
-4. Build a production bundle when needed:
-
-```bash
-npm run build
-```
-
-## Run Tests
-
-Run the automated test suite with:
+3. Run tests:
 
 ```bash
 npm test
 ```
 
-The tests cover:
+4. Build for production:
 
-- password input rendering and `type="password"`
-- console logging on text changes
-- submit button rendering
-- console logging on mouse enter and mouse leave
-- rapid input updates as an edge case
+```bash
+npm run build
+```
 
-## Screenshot
+## Test Coverage
 
-Preview image:
+`src/App.test.jsx` verifies:
 
-![Password input lab preview](./docs/password-input-preview.svg)
-
-## Notes
-
-- There are no `Home.jsx`, `About.jsx`, or `Links.jsx` files in this workspace, so that documentation requirement is not applicable to this repo.
-- You do not need to create an empty GitHub repository just to complete this lab locally. Only create or push to GitHub if your class or client specifically requires remote version control.
+- dark mode toggle button text changes correctly
+- category filtering shows matching products
+- add-to-cart updates cart output
 
 ## License
 

@@ -1,34 +1,29 @@
-# React Shopping App Lab
+# Shopping Forms Lab
 
-This project is a dynamic shopping application built with React and the `useState` hook.
-
-It implements three core features:
-
-- dark mode toggle
-- category-based product filtering
-- add-to-cart behavior
+This project extends the shopping list app with controlled form elements in React.
 
 ## Component Tree
 
 ```text
 App
-|- DarkModeToggle
-|- ProductList
-|  |- ProductCard
-|- Cart
+|- Filter
+|- ItemList
+|- ItemForm
 ```
 
 ## Features Implemented
 
-- Dark Mode Toggle
-	- The toggle button text switches between `Toggle Dark Mode` and `Toggle Light Mode`.
-	- The app shell updates visual styles when dark mode is enabled.
-- Product Category Filtering
-	- A category dropdown in `App` updates selected category state.
-	- `ProductList` only renders products matching the selected category.
-- Add to Cart
-	- Each `ProductCard` has an `Add to Cart` button.
-	- Added items appear in `Cart` as messages such as `Milk is in your cart.`
+- Controlled Search
+	- The search input uses a `search` prop for its value.
+	- `onSearchChange` is called whenever the user types.
+	- The list updates dynamically for full and partial matches.
+- Controlled Category Filter
+	- The category `<select>` is controlled by app state.
+	- List output reflects category and search at the same time.
+- Controlled Item Form
+	- Name and category inputs are fully controlled.
+	- Category input initializes as `Produce`.
+	- Form submission calls `onItemFormSubmit` and appends a new item.
 
 ## Run Locally
 
@@ -60,9 +55,12 @@ npm run build
 
 `src/App.test.jsx` verifies:
 
-- dark mode toggle button text changes correctly
-- category filtering shows matching products
-- add-to-cart updates cart output
+- controlled `search` value behavior
+- `onSearchChange` callback behavior
+- initial item rendering
+- full and partial search filtering
+- `onItemFormSubmit` callback behavior
+- adding a new item from form submit
 
 ## License
 

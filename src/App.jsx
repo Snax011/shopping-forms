@@ -1,99 +1,80 @@
 import { useMemo, useState } from "react";
-import Cart from "./components/Cart.jsx";
-import DarkModeToggle from "./components/DarkModeToggle.jsx";
-import ProductList from "./components/ProductList.jsx";
+import Filter from "./components/Filter.jsx";
+import ItemForm from "./components/ItemForm.jsx";
+import ItemList from "./components/ItemList.jsx";
 
-const PRODUCTS = [
+const INITIAL_ITEMS = [
   { id: 1, name: "Milk", category: "Dairy" },
-  { id: 2, name: "Cheddar", category: "Dairy" },
+  { id: 2, name: "Cheese", category: "Dairy" },
   { id: 3, name: "Apples", category: "Produce" },
-  { id: 4, name: "Broccoli", category: "Produce" },
-  { id: 5, name: "Bread", category: "Bakery" },
-  { id: 6, name: "Bagels", category: "Bakery" },
+  { id: 4, name: "Bread", category: "Bakery" },
+  { id: 5, name: "Chicken", category: "Meat" },
 ];
 
 const ALL_CATEGORIES = "All";
 
 export default function App() {
-  const [darkMode, setDarkMode] = useState(false);
-  const [cartItems, setCartItems] = useState([]);
+  const [items, setItems] = useState(INITIAL_ITEMS);
+  const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORIES);
 
   const categories = useMemo(
     () => [
       ALL_CATEGORIES,
-      ...new Set(PRODUCTS.map((product) => product.category)),
+      ...new Set(items.map((item) => item.category)),
     ],
-    [],
+    [items],
   );
 
-  const filteredProducts = useMemo(() => {
-    if (selectedCategory === ALL_CATEGORIES) {
-      return PRODUCTS;
-    }
-
-    return PRODUCTS.filter((product) => product.category === selectedCategory);
-  }, [selectedCategory]);
-
-  function handleModeToggle() {
-    setDarkMode((prevMode) => !prevMode);
+  function handleSearchChange(event) {
+    setSearch(event.target.value);
   }
 
   function handleCategoryChange(event) {
     setSelectedCategory(event.target.value);
   }
 
-  function handleAddToCart(product) {
-    setCartItems((prevItems) => [...prevItems, product]);
+  function handleItemFormSubmit(newItem) {
+    setItems((currentItems) => [...currentItems, newItem]);
   }
 
+  const visibleItems = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    return items.filter((item) => {
+      const matchesSearch = item.name.toLowerCase().includes(normalizedSearch);
+      const matchesCategory =
+        selectedCategory === ALL_CATEGORIES || item.category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [items, search, selectedCategory]);
+
   return (
-    <main
-      className={`app-shell ${darkMode ? "dark-mode" : "light-mode"}`}
-      aria-live="polite"
-    >
+    <main className="app-shell" aria-live="polite">
       <header className="app-header">
-        <p className="eyebrow">React Hooks Shopping Lab</p>
-        <h1>Groceries Dashboard</h1>
+        <p className="eyebrow">Shopping Forms Lab</p>
+        <h1>Smart Shopping List</h1>
         <p className="subtitle">
-          Toggle themes, filter by category, and add products to your cart.
+          Search and filter your list, then add more items with a controlled form.
         </p>
-        <DarkModeToggle darkMode={darkMode} onToggle={handleModeToggle} />
       </header>
 
       <div className="app-grid">
-        <section className="stack" aria-label="Shopping controls">
-          <section className="panel" aria-labelledby="category-filter-title">
-            <h2 id="category-filter-title">Category Filter</h2>
-            <p className="panel-description">
-              Pick a category to focus the shopping list.
-            </p>
-
-            <label className="field-label" htmlFor="category-select">
-              Filter products by category
-            </label>
-            <select
-              id="category-select"
-              className="category-select"
-              value={selectedCategory}
-              onChange={handleCategoryChange}
-            >
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </section>
-
-          <ProductList
-            products={filteredProducts}
-            onAddToCart={handleAddToCart}
-            selectedCategory={selectedCategory}
+        <section className="panel stack" aria-label="Shopping list controls">
+          <Filter
+            search={search}
+            onSearchChange={handleSearchChange}
+            category={selectedCategory}
+            categories={categories}
+            onCategoryChange={handleCategoryChange}
           />
+          <ItemList items={visibleItems} />
         </section>
 
-        <Cart items={cartItems} />
+        <section className="panel" aria-label="Add a new shopping item">
+          <ItemForm onItemFormSubmit={handleItemFormSubmit} />
+        </section>
       </div>
     </main>
   );

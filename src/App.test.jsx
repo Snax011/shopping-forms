@@ -1,44 +1,120 @@
 import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import App from "./App.jsx";
+import Filter from "./components/Filter.jsx";
+import ItemForm from "./components/ItemForm.jsx";
 
-describe("shopping app behavior", () => {
-  it("toggles dark mode button text", () => {
-    render(<App />);
+describe("Filter component", () => {
+  it("uses the search prop in the input value", () => {
+    render(
+      <Filter
+        search="milk"
+        onSearchChange={() => {}}
+        category="All"
+        categories={["All", "Produce"]}
+        onCategoryChange={() => {}}
+      />,
+    );
 
-    const toggleButton = screen.getByRole("button", {
-      name: "Toggle Dark Mode",
-    });
-
-    fireEvent.click(toggleButton);
-
-    expect(
-      screen.getByRole("button", { name: "Toggle Light Mode" }),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Search...")).toHaveValue("milk");
   });
 
-  it("filters products by category", () => {
+  it("calls onSearchChange when input changes", () => {
+    const onSearchChange = vi.fn();
+
+    render(
+      <Filter
+        search=""
+        onSearchChange={onSearchChange}
+        category="All"
+        categories={["All", "Produce"]}
+        onCategoryChange={() => {}}
+      />,
+    );
+
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "app" },
+    });
+
+    expect(onSearchChange).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("shopping forms app behavior", () => {
+  it("shows all shopping items on initial render", () => {
     render(<App />);
 
-    fireEvent.change(screen.getByLabelText("Filter products by category"), {
-      target: { value: "Produce" },
+    expect(screen.getByText("Milk")).toBeInTheDocument();
+    expect(screen.getByText("Cheese")).toBeInTheDocument();
+    expect(screen.getByText("Apples")).toBeInTheDocument();
+    expect(screen.getByText("Bread")).toBeInTheDocument();
+    expect(screen.getByText("Chicken")).toBeInTheDocument();
+  });
+
+  it("filters shopping items by full and partial search terms", () => {
+    render(<App />);
+
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "Apples" },
     });
 
     expect(screen.getByText("Apples")).toBeInTheDocument();
-    expect(screen.getByText("Broccoli")).toBeInTheDocument();
     expect(screen.queryByText("Milk")).not.toBeInTheDocument();
+    expect(screen.queryByText("Bread")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "ee" },
+    });
+
+    expect(screen.getByText("Cheese")).toBeInTheDocument();
+    expect(screen.queryByText("Bread")).not.toBeInTheDocument();
   });
 
-  it("adds products to the cart", () => {
+  it("adds a new item to the list when the form is submitted", () => {
     render(<App />);
 
-    const milkCard = screen
-      .getByText("Milk")
-      .closest("article");
-    const addButton = milkCard.querySelector("button");
-    fireEvent.click(addButton);
+    fireEvent.change(screen.getByLabelText("Name"), {
+      target: { value: "Yogurt" },
+    });
+    fireEvent.change(screen.getByLabelText("Category", { selector: "#item-category" }), {
+      target: { value: "Dairy" },
+    });
 
-    expect(screen.getByText("Milk is in your cart.")).toBeInTheDocument();
+    fireEvent.submit(screen.getByRole("form", { name: "Item form" }));
+
+    expect(screen.getByText("Yogurt")).toBeInTheDocument();
+  });
+});
+
+describe("ItemForm component", () => {
+  it("calls onItemFormSubmit when submitted", () => {
+    const onItemFormSubmit = vi.fn();
+    render(<ItemForm onItemFormSubmit={onItemFormSubmit} />);
+
+    fireEvent.change(screen.getByLabelText("Name"), {
+      target: { value: "Spinach" },
+    });
+
+    fireEvent.submit(screen.getByRole("form", { name: "Item form" }));
+
+    expect(onItemFormSubmit).toHaveBeenCalledTimes(1);
+    expect(onItemFormSubmit.mock.calls[0][0]).toMatchObject({
+      name: "Spinach",
+      category: "Produce",
+    });
+  });
+
+  it("uses controlled inputs", () => {
+    render(<ItemForm onItemFormSubmit={() => {}} />);
+
+    const nameInput = screen.getByLabelText("Name");
+    const categoryInput = screen.getByLabelText("Category");
+
+    fireEvent.change(nameInput, { target: { value: "Tomato" } });
+    fireEvent.change(categoryInput, { target: { value: "Produce" } });
+
+    expect(nameInput).toHaveValue("Tomato");
+    expect(categoryInput).toHaveValue("Produce");
   });
 });

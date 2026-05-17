@@ -2,119 +2,150 @@ import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import App from "./App.jsx";
-import Filter from "./components/Filter.jsx";
-import ItemForm from "./components/ItemForm.jsx";
+import ProjectCard from "./components/ProjectCard.jsx";
+import ProjectForm from "./components/ProjectForm.jsx";
+import SearchBar from "./components/SearchBar.jsx";
+import projects from "./projects_data.js";
 
-describe("Filter component", () => {
-  it("uses the search prop in the input value", () => {
-    render(
-      <Filter
-        search="milk"
-        onSearchChange={() => {}}
-        category="All"
-        categories={["All", "Produce"]}
-        onCategoryChange={() => {}}
-      />,
-    );
+// ─── ProjectCard ────────────────────────────────────────────────────────
+describe("ProjectCard component", () => {
+  const project = projects[0];
 
-    expect(screen.getByPlaceholderText("Search...")).toHaveValue("milk");
+  it("renders the project title", () => {
+    render(<ProjectCard project={project} />);
+    expect(screen.getByText(project.title)).toBeInTheDocument();
   });
 
-  it("calls onSearchChange when input changes", () => {
-    const onSearchChange = vi.fn();
+  it("renders the project description", () => {
+    render(<ProjectCard project={project} />);
+    expect(screen.getByText(project.description)).toBeInTheDocument();
+  });
 
-    render(
-      <Filter
-        search=""
-        onSearchChange={onSearchChange}
-        category="All"
-        categories={["All", "Produce"]}
-        onCategoryChange={() => {}}
-      />,
-    );
-
-    fireEvent.change(screen.getByPlaceholderText("Search..."), {
-      target: { value: "app" },
+  it("renders each tech tag", () => {
+    render(<ProjectCard project={project} />);
+    project.tech.forEach((t) => {
+      expect(screen.getByText(t)).toBeInTheDocument();
     });
+  });
 
-    expect(onSearchChange).toHaveBeenCalledTimes(1);
+  it("renders GitHub and Live Demo links", () => {
+    render(<ProjectCard project={project} />);
+    expect(screen.getByRole("link", { name: /github/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /live demo/i })).toBeInTheDocument();
   });
 });
 
-describe("shopping forms app behavior", () => {
-  it("shows all shopping items on initial render", () => {
-    render(<App />);
-
-    expect(screen.getByText("Milk")).toBeInTheDocument();
-    expect(screen.getByText("Cheese")).toBeInTheDocument();
-    expect(screen.getByText("Apples")).toBeInTheDocument();
-    expect(screen.getByText("Bread")).toBeInTheDocument();
-    expect(screen.getByText("Chicken")).toBeInTheDocument();
+// ─── SearchBar ──────────────────────────────────────────────────────────
+describe("SearchBar component", () => {
+  it("renders with the provided value", () => {
+    render(<SearchBar value="react" onChange={() => {}} />);
+    expect(screen.getByRole("textbox")).toHaveValue("react");
   });
 
-  it("filters shopping items by full and partial search terms", () => {
-    render(<App />);
-
-    fireEvent.change(screen.getByPlaceholderText("Search..."), {
-      target: { value: "Apples" },
-    });
-
-    expect(screen.getByText("Apples")).toBeInTheDocument();
-    expect(screen.queryByText("Milk")).not.toBeInTheDocument();
-    expect(screen.queryByText("Bread")).not.toBeInTheDocument();
-
-    fireEvent.change(screen.getByPlaceholderText("Search..."), {
-      target: { value: "ee" },
-    });
-
-    expect(screen.getByText("Cheese")).toBeInTheDocument();
-    expect(screen.queryByText("Bread")).not.toBeInTheDocument();
+  it("calls onChange when the user types", () => {
+    const onChange = vi.fn();
+    render(<SearchBar value="" onChange={onChange} />);
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "node" } });
+    expect(onChange).toHaveBeenCalledTimes(1);
   });
 
-  it("adds a new item to the list when the form is submitted", () => {
-    render(<App />);
+  it("shows the clear button only when value is non-empty", () => {
+    const { rerender } = render(<SearchBar value="" onChange={() => {}} />);
+    expect(screen.queryByLabelText("Clear search")).not.toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText("Name"), {
-      target: { value: "Yogurt" },
-    });
-    fireEvent.change(screen.getByLabelText("Category", { selector: "#item-category" }), {
-      target: { value: "Dairy" },
-    });
+    rerender(<SearchBar value="test" onChange={() => {}} />);
+    expect(screen.getByLabelText("Clear search")).toBeInTheDocument();
+  });
 
-    fireEvent.submit(screen.getByRole("form", { name: "Item form" }));
-
-    expect(screen.getByText("Yogurt")).toBeInTheDocument();
+  it("calls onChange with empty string when clear is clicked", () => {
+    const onChange = vi.fn();
+    render(<SearchBar value="hello" onChange={onChange} />);
+    fireEvent.click(screen.getByLabelText("Clear search"));
+    expect(onChange).toHaveBeenCalledWith("");
   });
 });
 
-describe("ItemForm component", () => {
-  it("calls onItemFormSubmit when submitted", () => {
-    const onItemFormSubmit = vi.fn();
-    render(<ItemForm onItemFormSubmit={onItemFormSubmit} />);
+// ─── ProjectForm ────────────────────────────────────────────────────────
+describe("ProjectForm component", () => {
+  it("reveals the form when Add New Project is clicked", () => {
+    render(<ProjectForm onAddProject={() => {}} />);
+    fireEvent.click(screen.getByText("+ Add New Project"));
+    expect(screen.getByLabelText("New project form")).toBeInTheDocument();
+  });
 
-    fireEvent.change(screen.getByLabelText("Name"), {
-      target: { value: "Spinach" },
+  it("calls onAddProject with correct data on submit", () => {
+    const onAddProject = vi.fn();
+    render(<ProjectForm onAddProject={onAddProject} />);
+
+    fireEvent.click(screen.getByText("+ Add New Project"));
+
+    fireEvent.change(screen.getByLabelText(/project title/i), {
+      target: { value: "Test Project" },
+    });
+    fireEvent.change(screen.getByLabelText(/description/i), {
+      target: { value: "A test description" },
     });
 
-    fireEvent.submit(screen.getByRole("form", { name: "Item form" }));
+    fireEvent.submit(screen.getByLabelText("New project form"));
 
-    expect(onItemFormSubmit).toHaveBeenCalledTimes(1);
-    expect(onItemFormSubmit.mock.calls[0][0]).toMatchObject({
-      name: "Spinach",
-      category: "Produce",
+    expect(onAddProject).toHaveBeenCalledTimes(1);
+    expect(onAddProject.mock.calls[0][0]).toMatchObject({
+      title: "Test Project",
+      description: "A test description",
     });
   });
 
-  it("uses controlled inputs", () => {
-    render(<ItemForm onItemFormSubmit={() => {}} />);
+  it("does not call onAddProject when title is empty", () => {
+    const onAddProject = vi.fn();
+    render(<ProjectForm onAddProject={onAddProject} />);
+    fireEvent.click(screen.getByText("+ Add New Project"));
+    fireEvent.submit(screen.getByLabelText("New project form"));
+    expect(onAddProject).not.toHaveBeenCalled();
+  });
+});
 
-    const nameInput = screen.getByLabelText("Name");
-    const categoryInput = screen.getByLabelText("Category");
+// ─── App integration ────────────────────────────────────────────────────
+describe("Portfolio App", () => {
+  it("renders all initial projects on load", () => {
+    render(<App />);
+    projects.forEach((p) => {
+      expect(screen.getByText(p.title)).toBeInTheDocument();
+    });
+  });
 
-    fireEvent.change(nameInput, { target: { value: "Tomato" } });
-    fireEvent.change(categoryInput, { target: { value: "Produce" } });
+  it("filters projects when the user types in the search bar", () => {
+    render(<App />);
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: projects[0].title },
+    });
+    expect(screen.getByText(projects[0].title)).toBeInTheDocument();
+    // other projects should be hidden
+    expect(screen.queryByText(projects[1].title)).not.toBeInTheDocument();
+  });
 
-    expect(nameInput).toHaveValue("Tomato");
-    expect(categoryInput).toHaveValue("Produce");
+  it("shows empty state when no projects match the search", () => {
+    render(<App />);
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "xyznonexistentproject123" },
+    });
+    expect(
+      screen.getByText(/no projects match your search/i),
+    ).toBeInTheDocument();
+  });
+
+  it("adds a new project via the form and displays it", () => {
+    render(<App />);
+    fireEvent.click(screen.getByText("+ Add New Project"));
+
+    fireEvent.change(screen.getByLabelText(/project title/i), {
+      target: { value: "Brand New Portfolio Entry" },
+    });
+    fireEvent.change(screen.getByLabelText(/description/i), {
+      target: { value: "This is a brand new entry." },
+    });
+
+    fireEvent.submit(screen.getByLabelText("New project form"));
+
+    expect(screen.getByText("Brand New Portfolio Entry")).toBeInTheDocument();
   });
 });

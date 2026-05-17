@@ -1,81 +1,54 @@
 import { useMemo, useState } from "react";
-import Filter from "./components/Filter.jsx";
-import ItemForm from "./components/ItemForm.jsx";
-import ItemList from "./components/ItemList.jsx";
+import Header from "./components/Header.jsx";
+import SearchBar from "./components/SearchBar.jsx";
+import ProjectList from "./components/ProjectList.jsx";
+import ProjectForm from "./components/ProjectForm.jsx";
+import initialProjects from "./projects_data.js";
 
-const INITIAL_ITEMS = [
-  { id: 1, name: "Milk", category: "Dairy" },
-  { id: 2, name: "Cheese", category: "Dairy" },
-  { id: 3, name: "Apples", category: "Produce" },
-  { id: 4, name: "Bread", category: "Bakery" },
-  { id: 5, name: "Chicken", category: "Meat" },
-];
-
-const ALL_CATEGORIES = "All";
-
+/**
+ * App — root component.
+ * Owns the canonical projects array and the search string.
+ * Passes filtered data down to ProjectList and add-handler down to ProjectForm.
+ */
 export default function App() {
-  const [items, setItems] = useState(INITIAL_ITEMS);
+  const [projects, setProjects] = useState(initialProjects);
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORIES);
 
-  const categories = useMemo(
-    () => [
-      ALL_CATEGORIES,
-      ...new Set(items.map((item) => item.category)),
-    ],
-    [items],
-  );
-
-  function handleSearchChange(event) {
-    setSearch(event.target.value);
+  /** Add a new project to the top of the list. */
+  function handleAddProject(newProject) {
+    setProjects((prev) => [newProject, ...prev]);
   }
 
-  function handleCategoryChange(event) {
-    setSelectedCategory(event.target.value);
-  }
+  /** Derived list — recomputed only when projects or search changes. */
+  const visibleProjects = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return projects;
 
-  function handleItemFormSubmit(newItem) {
-    setItems((currentItems) => [...currentItems, newItem]);
-  }
-
-  const visibleItems = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    return items.filter((item) => {
-      const matchesSearch = item.name.toLowerCase().includes(normalizedSearch);
-      const matchesCategory =
-        selectedCategory === ALL_CATEGORIES || item.category === selectedCategory;
-
-      return matchesSearch && matchesCategory;
-    });
-  }, [items, search, selectedCategory]);
+    return projects.filter(
+      (p) =>
+        p.title.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query) ||
+        p.tech.some((t) => t.toLowerCase().includes(query)),
+    );
+  }, [projects, search]);
 
   return (
-    <main className="app-shell" aria-live="polite">
-      <header className="app-header">
-        <p className="eyebrow">Shopping Forms Lab</p>
-        <h1>Smart Shopping List</h1>
-        <p className="subtitle">
-          Search and filter your list, then add more items with a controlled form.
-        </p>
-      </header>
+    <div className="portfolio-shell">
+      <Header />
 
-      <div className="app-grid">
-        <section className="panel stack" aria-label="Shopping list controls">
-          <Filter
-            search={search}
-            onSearchChange={handleSearchChange}
-            category={selectedCategory}
-            categories={categories}
-            onCategoryChange={handleCategoryChange}
-          />
-          <ItemList items={visibleItems} />
-        </section>
+      <main className="portfolio-main" aria-label="Portfolio">
+        <div className="portfolio-controls">
+          <SearchBar value={search} onChange={setSearch} />
+          <ProjectForm onAddProject={handleAddProject} />
+        </div>
 
-        <section className="panel" aria-label="Add a new shopping item">
-          <ItemForm onItemFormSubmit={handleItemFormSubmit} />
-        </section>
-      </div>
-    </main>
+        <ProjectList projects={visibleProjects} />
+      </main>
+
+      <footer className="site-footer">
+        <p>© {new Date().getFullYear()} DevShowcase — Built with React</p>
+      </footer>
+    </div>
   );
 }

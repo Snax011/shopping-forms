@@ -137,3 +137,7 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Local lab repositories
+react-hooks-plantshop-cr-vite/
+react-side-effects-vite/
